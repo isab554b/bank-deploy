@@ -1,0 +1,36 @@
+version: "3.9"
+
+services:
+  db:
+    image: sqlite:latest
+    volumes:
+      - sqlite-data:/db.sqlite3
+    env_file:
+      - db_${RTE}.env
+
+  app:
+    build: .
+    env_file:
+      - db_${RTE}.env
+    volumes:
+      - .:/delta-django
+      - static:/static/
+    depends_on:
+      - db
+
+  nginx:
+    build: nginx/
+    ports:
+      - 443:443
+      - 80:80
+    volumes:
+      - ./nginx/${RTE}/:/etc/nginx/conf.d/
+      - ./certs/:/etc/letsencrypt/
+      - static:/static/
+    depends_on:
+      - app
+
+volumes:
+  sqlite-data:
+  static:
+
